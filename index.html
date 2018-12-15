@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>test canvas</title>
+    <style media="screen">
+      * {margin:0; padding:0; box-sizine:border-box;}
+      body {overflow:hidden; background:url("road1.png") no-repeat 50% 50%; background-size:cover;}
+      article {position:absolute; top:50%; left:50%;
+               transform:translate(-50%,-50%);
+               text-align:center; opacity:0; font-weight:bold; font-size:2em;
+               transition:all 2s ease;}
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+    <article>
+      눈을 감으니,
+    </article>
+    <script type="text/javascript">
+      var canvas = document.querySelector("canvas");
+      var article = document.querySelector("article");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      var ctx = canvas.getContext("2d");
+
+      var mouse = {
+        x : undefined,
+        y : undefined
+      };
+      var s = 0;
+      var b = 0;
+      var text = ["눈을 감으니,","안보이던 것들이 보인다.","사랑","미련","후회...",""]
+      window.onmousedown = function(e){
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+
+        var t = setInterval(function(){
+          article.style.opacity = 1;
+        },500)
+
+        window.onmouseup = function(e){
+          b++;
+          if(b==6) b=0;
+          mouse.x = undefined;
+          mouse.y = undefined;
+          article.style.opacity = 0;
+          setTimeout(function(){
+            document.body.style.background = `url("road${b+1}.png") no-repeat 50% 50%`;
+            document.body.style.backgroundSize = "cover";
+          },1500);
+
+          clearInterval(t);
+          setTimeout(function(){
+            s++;
+            if(s==6) s=0;
+            article.innerHTML = text[s];
+          },2000);
+        }
+      }
+
+      function Ball(xPos,yPos,radius,dx,dy,opacity){
+        this.xPos = xPos;
+        this.yPos = yPos;
+        this.radius = radius;
+        this.dx = dx;
+        this.dy = dy;
+        this.opacity = opacity
+        this.draw = function(){
+          ctx.beginPath();
+          ctx.arc(this.xPos, this.yPos, this.radius, 0, Math.PI*2, false);
+          ctx.fillStyle = `rgba(255,255,255,${this.opacity})`
+          ctx.fill();
+          ctx.closePath();
+        }
+        this.update = function(){
+          if(this.xPos+this.radius>window.innerWidth || this.xPos+this.radius<this.radius) this.dx = -this.dx;
+          else if(this.yPos+this.radius>window.innerHeight || this.yPos+this.radius<this.radius) this.dy = -this.dy;
+          this.xPos += this.dx;
+          this.yPos += this.dy;
+          this.draw();
+
+          if(mouse.y-this.yPos<30 && mouse.y-yPos>-30){
+            this.radius +=3;
+            this.opacity += .01;
+
+          }
+          else if(this.radius>5 && this.opacity>0){
+            this.radius -= 3;
+            this.opacity -= .01;
+
+          }
+        }
+      }
+
+      var ballArray = [];
+      for(var i = 0; i<300;i++){
+        var xPos = Math.random()*innerWidth;
+        var yPos = Math.random()*innerHeight;
+        var dx = Math.random()*3;
+        var dy = Math.random()*3;
+        var opacity = 0;
+        ballArray.push(new Ball(xPos,yPos,5,dx,dy,opacity));
+      }
+
+      function animate(){
+        ctx.clearRect(0, 0, innerWidth, innerHeight);
+        requestAnimationFrame(animate);
+        for(var i = 0; i<ballArray.length;i++){
+          ballArray[i].update();
+        }
+      }
+      animate();
+    </script>
+  </body>
+</html>
